@@ -23,13 +23,13 @@ class DefaultController
 
     public function actionMonitorDisk()
     {
-        exec('df', $output);
-
-        if (!preg_match('~\s+(\d+)% /$~mui', implode("\n", $output), $matches)) {
-            throw new RuntimeException('No data');
-        }
         $redisWatch = new RedisWatch(new Redis());
-        $redisWatch->logValue('disk_free_' . ENV, (int)$matches[1]);
+
+        $rootDir = '/';
+        $diskFreeSpace = disk_free_space($rootDir);
+        $diskTotalSpace = disk_total_space($rootDir);
+        $free = 100 - (int)ceil(100 * $diskFreeSpace / $diskTotalSpace);
+        $redisWatch->logValue('disk_free_' . ENV, $free);
     }
 }
 
